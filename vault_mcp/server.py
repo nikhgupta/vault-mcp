@@ -6,6 +6,7 @@ import argparse
 import atexit
 import logging
 import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -94,6 +95,60 @@ def stats() -> dict:
     s["embedding_model"] = "text-embedding-3-small"
     s["db_path"] = str(DB_PATH)
     return s
+
+
+@mcp.tool()
+def write(
+    path: str,
+    content: str,
+    commit_message: str | None = None,
+) -> dict:
+    """Write a file to the vault and optionally git commit.
+
+    The caller is responsible for classification, frontmatter, and path structure.
+    vault-mcp just writes the bytes and commits. The watcher handles re-indexing.
+
+    Args:
+        path: Relative path within the vault (e.g. "captures/saturn/2026/03/slug.md").
+        content: Full file content including frontmatter.
+        commit_message: If provided, git add + commit with this message. If omitted, file is written but not committed.
+
+    Returns:
+        Dict with status, absolute path, and optional git commit hash.
+    """
+    # Validate: no path traversal
+    resolved = (VAULT_PATH / path).resolve()
+    if not resolved.is_relative_to(VAULT_PATH):
+        return {"status": "error", "error": "Path traversal not allowed"}
+
+    # Write
+    resolved.parent.mkdir(parents=True, exist_ok=True)
+    resolved.write_text(content, encoding="utf-8")
+    result = {"status": "ok", "path": str(resolved), "relative_path": path}
+
+    # Optional git commit
+    if commit_message:
+        try:
+            subprocess.run(
+                ["git", "add", path],
+                cwd=VAULT_PATH, check=True, capture_output=True,
+            )
+            cp = subprocess.run(
+                ["git", "commit", "-m", commit_message],
+                cwd=VAULT_PATH, check=True, capture_output=True, text=True,
+            )
+            # Extract short hash
+            rev = subprocess.run(
+                ["git", "rev-parse", "--short", "HEAD"],
+                cwd=VAULT_PATH, capture_output=True, text=True,
+            )
+            result["committed"] = True
+            result["commit_hash"] = rev.stdout.strip()
+        except subprocess.CalledProcessError as e:
+            result["committed"] = False
+            result["git_error"] = e.stderr.decode() if isinstance(e.stderr, bytes) else e.stderr
+
+    return result
 
 
 # ── CLI Entry Point ──────────────────────────────────────────
