@@ -115,6 +115,27 @@ Add to `.mcp.json` or settings:
 | `stats` | Index statistics |
 | `write` | Write a file and optionally git commit |
 
+### Webhooks
+
+vault-mcp can receive webhooks from external services and write captures directly to the vault.
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/webhook/voicenotes` | POST | Receive VoiceNotes transcriptions |
+
+#### VoiceNotes webhook
+
+Handles `recording.created`, `recording.updated`, and `recording.deleted` events. Writes transcriptions to `captures/inbox/YYYY/MM/YYYY-MM-DD-{slug}.md` with frontmatter. The file watcher auto-indexes new files within seconds.
+
+**Auth:** Set `WEBHOOK_SECRET` env var. Pass as query param: `/webhook/voicenotes?secret=xxx` (VoiceNotes doesn't support custom headers). If `WEBHOOK_SECRET` is unset, all requests are accepted.
+
+**Example:**
+```bash
+curl -X POST 'http://localhost:8100/webhook/voicenotes?secret=xxx' \
+  -H 'Content-Type: application/json' \
+  -d '{"event":"recording.created","timestamp":"2026-03-01T10:00:00Z","data":{"id":"abc-123","title":"Morning thoughts","transcript":"Need to ship the onboarding flow this week."}}'
+```
+
 ### `search(query, top_k?, path_filter?)`
 
 Semantic search over your vault.
@@ -272,6 +293,7 @@ systemctl --user enable --now vault-mcp
 | `OPENAI_API_KEY` | (required) | OpenAI API key for embeddings |
 | `VAULT_PATH` | `.` (current dir) | Path to the folder to index |
 | `VAULT_DB_PATH` | `~/.vault-mcp/index.db` | SQLite database location |
+| `WEBHOOK_SECRET` | (optional) | Shared secret for webhook auth (query param) |
 
 ## Supported Formats
 

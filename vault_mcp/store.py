@@ -246,6 +246,22 @@ class VaultStore:
 
         return results
 
+    # ── Lookup ────────────────────────────────────────────────
+
+    def find_file_by_text(self, needle: str, path_prefix: str | None = None) -> str | None:
+        """Return the first file_path whose chunk text contains *needle*."""
+        if path_prefix:
+            row = self.conn.execute(
+                "SELECT file_path FROM chunks WHERE text LIKE ? AND file_path LIKE ? LIMIT 1",
+                (f"%{needle}%", f"{path_prefix}%"),
+            ).fetchone()
+        else:
+            row = self.conn.execute(
+                "SELECT file_path FROM chunks WHERE text LIKE ? LIMIT 1",
+                (f"%{needle}%",),
+            ).fetchone()
+        return row["file_path"] if row else None
+
     # ── Stats ─────────────────────────────────────────────────
 
     def stats(self) -> dict:

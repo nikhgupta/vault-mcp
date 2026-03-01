@@ -16,6 +16,7 @@ from .embeddings import embed_query
 from .indexer import reindex_path, reindex_vault
 from .store import DEFAULT_DB_PATH, VaultStore
 from .watcher import start_watcher
+from .webhooks import register_webhooks
 
 log = logging.getLogger(__name__)
 
@@ -27,6 +28,7 @@ DB_PATH = Path(os.environ.get("VAULT_DB_PATH", str(DEFAULT_DB_PATH)))
 # ── MCP Server ───────────────────────────────────────────────
 
 mcp = FastMCP("vault-mcp", instructions="Semantic search over a git-backed knowledge vault.")
+register_webhooks(mcp, VAULT_PATH, get_store=lambda: _get_store())
 
 _store: VaultStore | None = None
 
