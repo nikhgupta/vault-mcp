@@ -1,0 +1,20 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "vault-mcp"
+version = "0.1.0"
+description = "Git-backed folder → embeddings → MCP search"
+requires-python = ">=3.11"
+dependencies = [
+    "fastmcp>=2.0",
+    "kreuzberg>=4.0",
+    "openai>=1.0",
+    "sqlite-vec>=0.1",
+    "watchdog>=4.0",
+    "tiktoken>=0.7",
+]
+
+[project.scripts]
+vault-mcp = "vault_mcp.server:main"
