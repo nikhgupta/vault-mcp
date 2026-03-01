@@ -108,6 +108,13 @@ Add to `.mcp.json` or settings:
 
 ## MCP Tools
 
+| Tool | Purpose |
+|------|---------|
+| `search` | Semantic search over the vault |
+| `reindex` | Re-embed changed files |
+| `stats` | Index statistics |
+| `write` | Write a file and optionally git commit |
+
 ### `search(query, top_k?, path_filter?)`
 
 Semantic search over your vault.
@@ -127,6 +134,18 @@ Re-embed changed files. Without a path, indexes the full vault (skipping unchang
 ### `stats()`
 
 Returns indexed file count, chunk count, last index time, vault path, and embedding model.
+
+### `write(path, content, commit_message?)`
+
+Write a file to the vault and optionally git commit. The caller handles classification and frontmatter — vault-mcp just writes bytes and commits.
+
+```
+path: "captures/saturn/2026/03/ai-architecture-insight.md"
+content: "---\nplanet: saturn\nsource: slack\n---\n\nBreakthrough on embedding context..."
+commit_message: "capture(saturn): AI architecture insight from Slack"  # optional
+```
+
+Returns `{ status, path, relative_path, committed?, commit_hash? }`. Path traversal outside the vault is rejected. No git push — that's handled separately.
 
 ## CLI
 
