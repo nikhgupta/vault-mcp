@@ -123,7 +123,7 @@ def reindex_file(
     to_embed: list[tuple[int, Chunk]] = []  # (chunk_idx, chunk)
     for idx, chunk in enumerate(chunks):
         c_hash = _content_hash(chunk.text)
-        stored_hash = store.get_content_hash(rel_path, idx)
+        stored_hash = store.get_chunk_hash(rel_path, idx)
         if stored_hash == c_hash and not force:
             result.chunks_reused += 1
         else:
