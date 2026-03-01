@@ -1,6 +1,6 @@
 # vault-mcp
 
-Turn any folder into a semantically searchable knowledge base, exposed via [MCP](https://modelcontextprotocol.io/).
+Turn any folder into a searchable knowledge base for AI, exposed via [MCP](https://modelcontextprotocol.io/).
 
 Point it at a directory. It embeds everything — markdown, PDFs, images, audio, video. Search it from Claude Desktop, Claude Code, or any MCP client.
 

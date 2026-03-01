@@ -5,8 +5,22 @@ build-backend = "hatchling.build"
 [project]
 name = "vault-mcp"
 version = "0.1.0"
-description = "Git-backed folder → embeddings → MCP search"
+description = "Turn any folder into a searchable knowledge base for AI"
 requires-python = ">=3.11"
+license = "MIT"
+authors = [{ name = "Nikhil Gupta", email = "me@nikhgupta.com" }]
+readme = "README.md"
+keywords = ["mcp", "embeddings", "rag", "semantic-search", "sqlite-vec"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Text Processing :: Indexing",
+]
 dependencies = [
     "fastmcp>=2.0",
     "kreuzberg>=4.0",
@@ -15,6 +29,11 @@ dependencies = [
     "watchdog>=4.0",
     "tiktoken>=0.7",
 ]
+
+[project.urls]
+Homepage = "https://github.com/nikhgupta/vault-mcp"
+Repository = "https://github.com/nikhgupta/vault-mcp"
+Issues = "https://github.com/nikhgupta/vault-mcp/issues"
 
 [project.scripts]
 vault-mcp = "vault_mcp.server:main"
