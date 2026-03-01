@@ -59,7 +59,21 @@ Add to `claude_desktop_config.json`:
 }
 ```
 
-For a remote server, replace `localhost` with your server's hostname/IP.
+For a remote server with authentication (see [Remote Deployment](#remote-deployment)):
+
+```json
+{
+  "mcpServers": {
+    "vault": {
+      "type": "http",
+      "url": "https://your-server/mcp",
+      "headers": {
+        "Authorization": "Bearer YOUR_TOKEN"
+      }
+    }
+  }
+}
+```
 
 ### Connect from Claude Code
 
@@ -170,6 +184,66 @@ SQLite + sqlite-vec
   ▼
 MCP Server (FastMCP)
      search / reindex / stats
+```
+
+## Remote Deployment
+
+vault-mcp has no built-in authentication. For remote access, run it behind nginx with bearer token auth:
+
+1. **Bind to localhost only** and use streamable-http transport (the default):
+
+```bash
+vault-mcp serve --watch --host 127.0.0.1 --port 8100
+```
+
+2. **Add nginx reverse proxy** with bearer token validation:
+
+```nginx
+server {
+    listen 443 ssl;
+    server_name vault-mcp.example.com;
+
+    # SSL certs (e.g. Let's Encrypt)
+    ssl_certificate     /etc/letsencrypt/live/example.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/example.com/privkey.pem;
+
+    location / {
+        if ($http_authorization != "Bearer YOUR_SECRET_TOKEN") {
+            return 401 "Unauthorized";
+        }
+
+        proxy_pass http://127.0.0.1:8100;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto https;
+    }
+}
+```
+
+3. **Optional: systemd user service** for auto-restart:
+
+```ini
+# ~/.config/systemd/user/vault-mcp.service
+[Unit]
+Description=vault-mcp
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/path/to/vault-mcp
+Environment=OPENAI_API_KEY=sk-...
+Environment=VAULT_PATH=/path/to/your/vault
+ExecStart=/path/to/vault-mcp serve --watch --host 127.0.0.1 --port 8100
+Restart=on-failure
+
+[Install]
+WantedBy=default.target
+```
+
+```bash
+systemctl --user enable --now vault-mcp
 ```
 
 ## Configuration
